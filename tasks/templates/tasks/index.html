@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #555; font-weight: bold; }
+        input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        textarea { resize: vertical; min-height: 80px; }
+        button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; margin-left: 5px; }
+        .btn-cancel { background: #6c757d; color: white; margin-left: 5px; }
+        .task-list { margin-top: 30px; }
+        .task-item { background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 4px; border-left: 4px solid #007bff; }
+        .task-item.completed { opacity: 0.6; border-left-color: #28a745; }
+        .task-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px; }
+        .task-description { color: #666; margin-bottom: 10px; }
+        .task-meta { font-size: 12px; color: #999; margin-bottom: 10px; }
+        .task-actions { margin-top: 10px; }
+        #taskForm { display: none; margin-bottom: 20px; padding: 20px; background: #e9ecef; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Task Manager</h1>
+        
+        <button class="btn-primary" onclick="showAddForm()">+ Add New Task</button>
+        
+        <div id="taskForm">
+            <h3 id="formTitle">Add New Task</h3>
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="taskTitle" placeholder="Enter task title">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="taskDescription" placeholder="Enter task description"></textarea>
+            </div>
+            <button class="btn-success" onclick="saveTask()">Save</button>
+            <button class="btn-cancel" onclick="cancelForm()">Cancel</button>
+        </div>
+        
+        <div class="task-list" id="taskList"></div>
+    </div>
+
+    <script>
+        let editingTaskId = null;
+        const API_URL = '/api/api/tasks/';
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function loadTasks() {
+            try {
+                const response = await fetch(API_URL);
+                const tasks = await response.json();
+                displayTasks(tasks);
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                document.getElementById('taskList').innerHTML = '<p style="color: red;">Error loading tasks. Check console.</p>';
+            }
+        }
+
+        function displayTasks(tasks) {
+            const taskList = document.getElementById('taskList');
+            if (tasks.length === 0) {
+                taskList.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No tasks yet. Click "Add New Task" to create one.</p>';
+                return;
+            }
+            taskList.innerHTML = tasks.map(task => `
+                <div class="task-item ${task.completed ? 'completed' : ''}">
+                    <div class="task-title">${task.title}</div>
+                    <div class="task-description">${task.description}</div>
+                    <div class="task-meta">Created: ${new Date(task.created_at).toLocaleString()}</div>
+                    <div class="task-actions">
+                        <button class="btn-success" onclick="toggleComplete(${task.id}, ${!task.completed})">
+                            ${task.completed ? 'Mark Incomplete' : 'Mark Complete'}
+                        </button>
+                        <button class="btn-primary" onclick="editTask(${task.id})">Edit</button>
+                        <button class="btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddForm() {
+            document.getElementById('formTitle').textContent = 'Add New Task';
+            document.getElementById('taskForm').style.display = 'block';
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            editingTaskId = null;
+        }
+
+        function cancelForm() {
+            document.getElementById('taskForm').style.display = 'none';
+            editingTaskId = null;
+        }
+
+        async function saveTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            
+            if (!title) {
+                alert('Please enter a title');
+                return;
+            }
+
+            const data = { title, description, completed: false };
+            const csrftoken = getCookie('csrftoken');
+            
+            try {
+                if (editingTaskId) {
+                    await fetch(`${API_URL}${editingTaskId}/`, {
+                        method: 'PUT',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    alert('Task updated successfully!');
+                } else {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    alert('Task created successfully!');
+                }
+                
+                cancelForm();
+                loadTasks();
+            } catch (error) {
+                alert('Error saving task: ' + error.message);
+            }
+        }
+
+        async function editTask(id) {
+            const response = await fetch(`${API_URL}${id}/`);
+            const task = await response.json();
+            
+            document.getElementById('formTitle').textContent = 'Edit Task';
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description;
+            document.getElementById('taskForm').style.display = 'block';
+            editingTaskId = id;
+        }
+
+        async function deleteTask(id) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                const csrftoken = getCookie('csrftoken');
+                try {
+                    const response = await fetch(`${API_URL}${id}/`, { 
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': csrftoken
+                        }
+                    });
+                    if (response.ok) {
+                        alert('Task deleted successfully!');
+                        loadTasks();
+                    } else {
+                        alert('Error deleting task');
+                    }
+                } catch (error) {
+                    alert('Error deleting task: ' + error.message);
+                }
+            }
+        }
+
+        async function toggleComplete(id, completed) {
+            const csrftoken = getCookie('csrftoken');
+            try {
+                const response = await fetch(`${API_URL}${id}/`);
+                const task = await response.json();
+                task.completed = completed;
+                
+                await fetch(`${API_URL}${id}/`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(task)
+                });
+                
+                loadTasks();
+            } catch (error) {
+                alert('Error updating task: ' + error.message);
+            }
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
