@@ -57,9 +57,9 @@ jobs:
       
       - name: Print Environment Variable
         run: |
-          echo "Application Environment: $App_ENV"
+          echo "Application Environment: ${{ vars.APP_ENV }}"
 
       - name: Simulate Deployment
         run: |
-          echo "Deploying application in $APP_ENV mode..."
+          echo "Deploying application in ${{ vars.APP_ENV }} mode..."
           ls -l
