@@ -22,9 +22,23 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
+    - name: Run Lint Check
+      run: |
+        flake8 .
     
     - name: Run migrations
       run: python manage.py migrate
     
     - name: Run tests
       run: python manage.py test
+
+    - name: Create Build Package
+      run: |
+        zip -r app.zip . -x "venv/*" "__pycache__/*" ".git/*"
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: django-build
+        path: app.zip
