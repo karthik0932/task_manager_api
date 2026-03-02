@@ -1,6 +1,16 @@
 [flake8]
 max-line-length = 120
+extend-ignore = E302,W292
 exclude = 
     venv,
     __pycache__,
     migrations
+
+
+; E302 → ignores blank line errors
+
+; W292 → ignores newline at end of file
+
+; exclude migrations → ignores Django generated files
+
+; max-line-length = 120 → removes E501 issues
