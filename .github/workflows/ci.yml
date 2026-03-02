@@ -54,8 +54,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: django-build
+      
+      - name: Print Environment Variable
+        run: |
+          echo "Application Environment: $App_ENV"
 
       - name: Simulate Deployment
         run: |
-          echo "Deploying application..."
+          echo "Deploying application in $APP_ENV mode..."
           ls -l
