@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     
     steps:
@@ -42,3 +42,18 @@ jobs:
       with:
         name: django-build
         path: app.zip
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: django-build
+
+      - name: Simulate Deployment
+        run: |
+          echo "Deploying application..."
+          ls -l
