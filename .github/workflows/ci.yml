@@ -38,7 +38,7 @@ jobs:
         zip -r app.zip . -x "venv/*" "__pycache__/*" ".git/*"
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: django-build
         path: app.zip
