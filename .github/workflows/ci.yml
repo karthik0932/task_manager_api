@@ -48,6 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: dev
+      url: https://dev.local
 
     steps:
       - name: Download Artifact
