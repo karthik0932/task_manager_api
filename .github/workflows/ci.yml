@@ -46,6 +46,7 @@ jobs:
   deploy-dev:
     needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment:
       name: dev
 
@@ -72,6 +73,7 @@ jobs:
   deploy-prod:
     needs: deploy-dev
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     environment:
       name: prod
 
