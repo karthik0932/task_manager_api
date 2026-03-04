@@ -25,7 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "local-dev-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+APP_ENV = os.getenv("APP_ENV", "development")
+
+DEBUG = APP_ENV == "development"
 
 ALLOWED_HOSTS = []
 

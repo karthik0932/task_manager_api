@@ -66,6 +66,9 @@ jobs:
           echo "${{ secrets.DJANGO_SECRET_KEY }}" | wc -c
           
       - name: Simulate Deployment
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          APP_ENV: ${{ vars.APP_ENV }}
         run: |
           echo "Deploying application in ${{ vars.APP_ENV }} mode..."
           ls -l
@@ -78,6 +81,11 @@ jobs:
       name: prod
 
     steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+        name: django-build
+
       - name: Simulate Production Deployment
         run: |
           echo "Deploying to PRODUCTION..."
