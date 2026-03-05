@@ -84,7 +84,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-        name: django-build
+          name: django-build
 
       - name: Simulate Production Deployment
         run: |
