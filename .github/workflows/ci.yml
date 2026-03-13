@@ -44,7 +44,7 @@ jobs:
         path: app.zip
 
     - name: Build Docker Image
-      run: docker build -t django-task-manager :latest .
+      run: docker build -t django-task-manager:latest .
 
   deploy-dev:
     needs: build
