@@ -15,7 +15,6 @@ COPY . .
 
 # Expose Django port
 
-
 EXPOSE 8000
 
 # Run Django server
