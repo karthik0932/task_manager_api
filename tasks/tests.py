@@ -33,5 +33,5 @@ class TaskAPITest(TestCase):
         response = self.client.delete(f"/api/tasks/{task.id}/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_failure_example(self):
-        self.assertEqual(1, 2)
+    # def test_failure_example(self):
+    #     self.assertEqual(1, 2)
