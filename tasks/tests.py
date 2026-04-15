@@ -20,17 +20,17 @@ class TaskAPITest(TestCase):
             "title": "API Task",
             "description": "Testing create"
         }
-        response = self.client.post("/api/tasks/", data)  
+        response = self.client.post("/api/tasks/", data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_get_tasks(self):
         Task.objects.create(title="Sample Task")
-        response = self.client.get("/api/tasks/")  
+        response = self.client.get("/api/tasks/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_task(self):
         task = Task.objects.create(title="Delete Task")
-        response = self.client.delete(f"/api/tasks/{task.id}/")  
+        response = self.client.delete(f"/api/tasks/{task.id}/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     # def test_failure_example(self):
