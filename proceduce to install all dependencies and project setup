@@ -11,3 +11,10 @@ pip install -r requirements.txt
 python manage.py migrate
 
 python manage.py runserver
+
+To run the application inside docker 
+docker build -t django-task-manager .
+
+docker run --rm -it -p 8000:8000 django-task-manager
+
+docker exec -it <container-id> python manage.py migrate
